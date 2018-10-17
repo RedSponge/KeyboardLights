@@ -7,6 +7,8 @@ import java.awt.event.KeyEvent;
 
 public class KeyboardManager {
 
+    public static KeyboardManager INSTANCE;
+
     private Robot r;
 
     private boolean[] keys;
@@ -18,17 +20,17 @@ public class KeyboardManager {
             e.printStackTrace();
         }
         keys = new boolean[] {false, false, false};
+//        allOff();
     }
 
     public void toggle(Light l) {
+//        System.out.println("AAA");
         r.keyPress(l.key);
         r.keyRelease(l.key);
         keys[l.id] = !keys[l.id];
     }
 
     public void setState(boolean a, boolean b, boolean c) {
-        System.out.println(a);
-        System.out.println(keys[0]);
          if(a && !keys[0] || !a && keys[0]) {
              toggle(Light.LEFT);
          }
@@ -42,8 +44,33 @@ public class KeyboardManager {
         }
     }
 
-    public void end() {
+    public void end()
+    {
         setState(false, false, false);
+    }
+
+    public void allOff() {
+//        System.out.println("toggle");
+        if(Toolkit.getDefaultToolkit().getLockingKeyState(Light.LEFT.key)) {
+//            System.out.println("TURN OFF LEFT");
+            toggle(Light.LEFT);
+            }if(Toolkit.getDefaultToolkit().getLockingKeyState(Light.MIDDLE.key)) {
+//            System.out.println("TURN OFF MID");
+            toggle(Light.MIDDLE);
+        }if(Toolkit.getDefaultToolkit().getLockingKeyState(Light.RIGHT.key)) {
+//            System.out.println("TURN OFF RIGHT");
+            toggle(Light.RIGHT);
+        }
+        try {
+            Thread.sleep(400);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        for(int i = 0; i < 3; i++) {
+            keys[i] = false;
+        }
+
     }
 
 

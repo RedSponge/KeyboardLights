@@ -3,49 +3,40 @@ package com.redsponge.lights;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 
 public class ScriptPlayer {
 
-    private KeyboardManager manager;
     private int[] states;
 
     private boolean loop;
-    private int delay;
 
-    private File f;
+    private InputStream in;
 
-    public ScriptPlayer(File f) {
-        manager = new KeyboardManager();
+    public ScriptPlayer(InputStream in) {
 
-        this.f = f;
+        this.in = in;
         this.loop = false;
-        this.delay = 0;
 
         readFile();
-        if(loop) doLoop();
-        else run();
     }
 
-    private void doLoop() {
+    public void loop(int delay) {
         while(true) {
-            run();
+            run(delay);
         }
     }
 
-    public void run() {
+    public void run(int delay) {
         for(int state : states) {
-            String s = Integer.toBinaryString(state);
 
-            while(s.length() < 3) {
-                s = "0" + s;
-            }
-//            System.out.println(s);
-            boolean first = (s.charAt(0) == '1');
-            boolean second = (s.charAt(1) == '1');
-            boolean third = (s.charAt(2) == '1');
+            boolean first = (state & 0b100) == 0b100;
+            boolean second = (state & 0b010) == 0b010;
+            boolean third = (state & 0b001) == 0b001;
 
-            manager.setState(first, second, third);
+            KeyboardManager.INSTANCE.setState(first, second, third);
             try {
                 Thread.sleep(delay);
             } catch (Exception e) {
@@ -57,33 +48,25 @@ public class ScriptPlayer {
 
     private void readFile() {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(f));
-            String state = reader.readLine();
-            if(state.split(" ")[0].equals("loop")) {
-                loop = true;
-            }
-            delay = Integer.parseInt(state.split(" ")[1]);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
-            String rest = "";
+            StringBuilder text = new StringBuilder();
             String s;
             while((s = reader.readLine()) != null) {
-                rest += s + "\n";
+                text.append(s).append("\n");
             }
 
-            String[] lines = rest.split("\n");
+
+            String[] lines = text.toString().split("\n");
             states = new int[lines.length];
             for (int i = 0; i < lines.length; i++) {
                 states[i] = Integer.parseInt(lines[i], 2);
             }
 
-            System.out.println("Loaded!");
-            System.out.println("Loop: " + loop);
-            System.out.println("Delay: " + delay);
-            System.out.println("States: \n" + Arrays.toString(states));
+            System.out.println("Loaded script!");
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
 
